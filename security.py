@@ -1,17 +1,26 @@
 import subprocess
 
 def firewall_status():
+
     try:
-        return subprocess.check_output(
+
+        result = subprocess.check_output(
             "netsh advfirewall show allprofiles",
             shell=True,
             text=True
         )
+
+        return result
+
     except Exception as e:
+
         return str(e)
 
+
 def defender_enabled():
+
     try:
+
         cmd = r'powershell "(Get-MpComputerStatus).RealTimeProtectionEnabled"'
 
         result = subprocess.check_output(
@@ -23,10 +32,14 @@ def defender_enabled():
         return "True" in result
 
     except:
+
         return False
 
+
 def defender_status():
+
     try:
+
         cmd = r'powershell "Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled"'
 
         return subprocess.check_output(
@@ -36,17 +49,28 @@ def defender_status():
         )
 
     except Exception as e:
+
         return str(e)
 
-def security_score(ram_usage):
+
+def security_score(
+    ram_usage,
+    defender=True,
+    firewall=True
+):
+
     score = 100
 
-    if not defender_enabled():
+    if ram_usage > 90:
+        score -= 20
+
+    elif ram_usage > 80:
+        score -= 10
+
+    if not defender:
         score -= 30
 
-    if ram_usage > 90:
-        score -= 15
-    elif ram_usage > 80:
-        score -= 5
+    if not firewall:
+        score -= 20
 
     return max(score, 0)
