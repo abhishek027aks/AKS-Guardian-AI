@@ -6,6 +6,10 @@ import pandas as pd
 from self_heal import *
 from reports import *
 
+from updater import *
+from startup import *
+from battery import *
+
 from security import (
     defender_enabled,
     security_score
@@ -177,40 +181,20 @@ st.dataframe(
 st.subheader("🤖 AI Recommendations")
 
 if ram > 85:
-    st.warning(
-        "⚠ High RAM Usage Detected"
-    )
-
-    st.write(
-        "• Close unused Brave tabs"
-    )
-
-    st.write(
-        "• Close extra VS Code windows"
-    )
+    st.warning("⚠ High RAM Usage Detected")
+    st.write("• Close unused Brave tabs")
+    st.write("• Close extra VS Code windows")
 
 if disk > 80:
-    st.warning(
-        "⚠ Disk space is running low"
-    )
-
-    st.write(
-        "• Clean unnecessary files"
-    )
+    st.warning("⚠ Disk space is running low")
+    st.write("• Clean unnecessary files")
 
 if cpu > 80:
-    st.warning(
-        "⚠ High CPU Usage Detected"
-    )
-
-    st.write(
-        "• Check high CPU consuming processes"
-    )
+    st.warning("⚠ High CPU Usage Detected")
+    st.write("• Check high CPU consuming processes")
 
 if ram <= 85 and disk <= 80 and cpu <= 80:
-    st.success(
-        "✅ System is running normally."
-    )
+    st.success("✅ System is running normally.")
 
 # =========================
 # Self Healing
@@ -256,7 +240,59 @@ if st.button("📥 Export CSV Report"):
     )
 
 # =========================
+# Battery Health
+# =========================
+st.subheader("🔋 Battery Health")
+
+battery = battery_info()
+
+if battery:
+
+    st.metric(
+        "Battery %",
+        f"{battery['percent']}%"
+    )
+
+    if battery["plugged"]:
+        st.success("Charging")
+    else:
+        st.warning("Running on Battery")
+
+else:
+    st.info("Battery not detected")
+
+# =========================
+# Startup Applications
+# =========================
+st.subheader("🚀 Startup Applications")
+
+apps = startup_apps()
+
+if apps:
+
+    startup_df = pd.DataFrame(apps)
+
+    st.dataframe(
+        startup_df,
+        use_container_width=True
+    )
+
+else:
+    st.info("No startup apps found")
+
+# =========================
+# Windows Updates
+# =========================
+st.subheader("🪟 Windows Updates")
+
+if st.button("Check Updates"):
+
+    updates = check_updates()
+
+    st.code(updates)
+
+# =========================
 # Footer
 # =========================
 st.markdown("---")
-st.caption("AKS Guardian AI v2.0 Phase 1")
+st.caption("AKS Guardian AI v2.0 Phase 2")
