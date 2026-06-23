@@ -1,25 +1,40 @@
 import os
 import shutil
+import tempfile
+import subprocess
 
 def clean_temp():
-    temp = os.environ.get("TEMP")
+    deleted = 0
 
-    count = 0
+    temp_dir = tempfile.gettempdir()
 
-    for item in os.listdir(temp):
-        path = os.path.join(temp, item)
+    for item in os.listdir(temp_dir):
+        path = os.path.join(temp_dir, item)
 
         try:
             if os.path.isfile(path):
                 os.remove(path)
-            else:
-                shutil.rmtree(path)
+                deleted += 1
 
-            count += 1
+            elif os.path.isdir(path):
+                shutil.rmtree(path, ignore_errors=True)
+                deleted += 1
+
         except:
             pass
 
-    return count
+    return deleted
+
 
 def flush_dns():
-    os.system("ipconfig /flushdns")
+    try:
+        subprocess.run(
+            "ipconfig /flushdns",
+            shell=True,
+            capture_output=True
+        )
+
+        return True
+
+    except:
+        return False

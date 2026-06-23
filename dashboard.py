@@ -1,6 +1,10 @@
+from streamlit_autorefresh import st_autorefresh
 import streamlit as st
 import psutil
 import pandas as pd
+
+from self_heal import *
+from reports import *
 
 from security import (
     defender_enabled,
@@ -24,9 +28,17 @@ st.set_page_config(
 )
 
 # =========================
+# Auto Refresh
+# =========================
+st_autorefresh(
+    interval=5000,
+    key="guardian_refresh"
+)
+
+# =========================
 # Title
 # =========================
-st.title("🛡️ AKS Guardian AI")
+st.title("🛡️ AKS Guardian AI v2.0")
 
 # =========================
 # System Stats
@@ -38,8 +50,12 @@ disk = psutil.disk_usage("C:\\").percent
 # =========================
 # Sidebar
 # =========================
-st.sidebar.title("AKS Guardian AI")
+st.sidebar.title("🛡️ AKS Guardian AI")
 st.sidebar.success("System Online")
+
+st.sidebar.write(f"CPU : {cpu}%")
+st.sidebar.write(f"RAM : {ram}%")
+st.sidebar.write(f"Disk : {disk}%")
 
 # =========================
 # Metrics
@@ -62,13 +78,11 @@ score = security_score(ram)
 
 st.subheader(f"🛡️ Security Score : {score}/100")
 
-# Defender
 if defender_enabled():
     st.success("🛡️ Windows Defender : ON")
 else:
     st.error("⚠️ Windows Defender : OFF")
 
-# Risk Level
 if score >= 80:
     st.success("🟢 LOW RISK")
 elif score >= 60:
@@ -164,7 +178,7 @@ st.subheader("🤖 AI Recommendations")
 
 if ram > 85:
     st.warning(
-        "High RAM Usage Detected"
+        "⚠ High RAM Usage Detected"
     )
 
     st.write(
@@ -176,18 +190,26 @@ if ram > 85:
     )
 
 if disk > 80:
+    st.warning(
+        "⚠ Disk space is running low"
+    )
+
     st.write(
         "• Clean unnecessary files"
     )
 
 if cpu > 80:
+    st.warning(
+        "⚠ High CPU Usage Detected"
+    )
+
     st.write(
         "• Check high CPU consuming processes"
     )
 
 if ram <= 85 and disk <= 80 and cpu <= 80:
     st.success(
-        "System is running normally."
+        "✅ System is running normally."
     )
 
 # =========================
@@ -195,13 +217,46 @@ if ram <= 85 and disk <= 80 and cpu <= 80:
 # =========================
 st.subheader("🧹 Self-Healing")
 
-if st.button("Clean Temp Files"):
+col1, col2 = st.columns(2)
+
+with col1:
+
+    if st.button("🧹 Clean Temp Files"):
+
+        count = clean_temp()
+
+        st.success(
+            f"{count} temp items cleaned."
+        )
+
+with col2:
+
+    if st.button("🌐 Flush DNS"):
+
+        if flush_dns():
+            st.success(
+                "DNS Cache Cleared"
+            )
+
+# =========================
+# Reports
+# =========================
+st.subheader("📄 Reports")
+
+if st.button("📥 Export CSV Report"):
+
+    file = save_report(
+        cpu,
+        ram,
+        disk
+    )
+
     st.success(
-        "Self-Healing feature will be added in next version."
+        f"Saved: {file}"
     )
 
 # =========================
 # Footer
 # =========================
 st.markdown("---")
-st.caption("AKS Guardian AI v1.1")
+st.caption("AKS Guardian AI v2.0 Phase 1")
