@@ -1,29 +1,26 @@
 import psutil
 
-
-def top_processes(limit=10):
-
-    data = []
-
-    for proc in psutil.process_iter(
-        ['name', 'cpu_percent', 'memory_percent']
-    ):
-
+def top_processes():
+    """
+    Scans active operating system processes, filtering out restricted internal nodes
+    and returns top 10 memory-consuming threads.
+    """
+    apps = []
+    for proc in psutil.process_iter(['pid', 'name', 'memory_percent', 'cpu_percent']):
         try:
-
-            data.append({
-                "name": proc.info["name"],
-                "cpu": round(proc.info["cpu_percent"], 1),
-                "ram": round(proc.info["memory_percent"], 1)
-            })
-
-        except:
+            # Fallback handling for background processes running under SYSTEM authority
+            p_info = proc.info
+            if p_info['memory_percent'] is None:
+                p_info['memory_percent'] = 0.0
+            if p_info['cpu_percent'] is None:
+                p_info['cpu_percent'] = 0.0
+                
+            apps.append(p_info)
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+        except Exception:
             pass
 
-    data = sorted(
-        data,
-        key=lambda x: x["cpu"],
-        reverse=True
-    )
-
-    return data[:limit]
+    # Sort structures via lambda sorting mapping
+    apps.sort(key=lambda x: x['memory_percent'], reverse=True)
+    return apps[:10]

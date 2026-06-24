@@ -1,20 +1,15 @@
 import sys
-
 from PySide6.QtWidgets import QApplication
-
 from ui.dashboard_ui import DashboardUI
 
-
 def main():
-
     app = QApplication(sys.argv)
-
+    
+    # Initialize the high-fidelity dashboard window
     window = DashboardUI()
-
     window.show()
-
+    
     sys.exit(app.exec())
-
 
 if __name__ == "__main__":
     main()
